@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+# Source the ".env" file so environment variables are available...
+if [ -f ./.env ]; then
+  source ./.env;
+fi
+
+export MAIN_SERVICE=${MAIN_SERVICE:-"pilot"}
+export WWWUSER=${WWWUSER:-$UID}
+export WWWGROUP=${WWWGROUP:-$(id -g)}
+
+ARGS=()
+
+# Run bash on the main container
+if [ "$1" == "bash" ]; then
+    shift 1
+
+    ARGS+=(exec)
+    [ ! -t 0 ] && ARGS+=(-T)
+    ARGS+=($MAIN_SERVICE "bash")
+# Proxy PHP commands to the "php" binary on the main container...
+elif [ "$1" == "php" ]; then
+    shift 1
+
+    ARGS+=(exec)
+    [ ! -t 0 ] && ARGS+=(-T)
+    ARGS+=($MAIN_SERVICE "php" "$@")
+# Proxy NPM commands to the "npm" binary on the main container...
+elif [ "$1" == "npm" ]; then
+    shift 1
+
+    ARGS+=(exec)
+    [ ! -t 0 ] && ARGS+=(-T)
+    ARGS+=($MAIN_SERVICE "npm" "$@")
+# Proxy Composer commands to the "composer" binary on the main container...
+elif [ "$1" == "composer" ]; then
+    shift 1
+
+    ARGS+=(exec)
+    [ ! -t 0 ] && ARGS+=(-T)
+    ARGS+=($MAIN_SERVICE "composer" "$@")
+# Run the local dev server
+elif [ "$1" == "serve" ]; then
+    shift 1
+
+    ARGS+=(exec)
+    [ ! -t 0 ] && ARGS+=(-T)
+    ARGS+=($MAIN_SERVICE "npm" "run" "dev")
+# Build the static files for distribution
+elif [ "$1" == "build" ]; then
+    shift 1
+
+    ARGS+=(exec)
+    [ ! -t 0 ] && ARGS+=(-T)
+    ARGS+=($MAIN_SERVICE "npm" "run" "build")
+# Alias the original `docker-compose build` command
+elif [ "$1" == "build-services" ]; then
+    shift 1
+
+    ARGS+=("build" "$@")
+else
+# Pass any other commands to Docker Compose
+    ARGS+=("$@")
+fi
+
+# Run Docker Compose with the defined arguments...
+docker-compose "${ARGS[@]}"
