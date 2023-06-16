@@ -1,0 +1,22 @@
+{
+  "name": "savvywombat/pilot",
+  "description": "A docker wrapper to help with general PHP development",
+  "keywords": [
+    "php",
+    "docker"
+  ],
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/SavvyWombat/pilot/issues",
+    "source": "https://github.com/SavvyWombat/pilot"
+  },
+  "authors": [
+    {
+      "name": "Stuart Jones",
+      "email": "stuart@savvywombat.com.au"
+    }
+  ],
+  "require": {
+    "php": "^8.0"
+  }
+}
