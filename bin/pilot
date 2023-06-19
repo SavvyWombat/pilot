@@ -11,6 +11,55 @@ export WWWGROUP=${WWWGROUP:-$(id -g)}
 
 ARGS=()
 
+function display_help {
+    echo "Pilot by Savvy Wombat"
+    echo
+    echo "A wrapper for docker-compose to assist PHP development"
+    echo
+    echo "Commands not listed here are forward to docker-compose"
+    echo
+    echo "  pilot install             creates a docker-compose.yml file in your project"
+    echo "  pilot build-services      alias for docker-composer build"
+    echo
+    echo "  pilot up                  runs the services"
+    echo "  pilot up -d               runs the services in the background"
+    echo "  pilot down                stops the services"
+    echo "  pilot down -v             stops the services and removes associated volumes"
+    echo
+    echo "  pilot composer ...        run composer commands in the site container"
+    echo "  pilot php ...             run php scripts in the site container"
+    echo
+    echo "  pilot npm ...             run npm commands in the site container"
+    echo
+    echo "  pilot bash                opens a terminal in the site container"
+    echo
+    echo "  pilot serve               start a development server"
+    echo "  pilot build               build production assets for the site"
+
+    exit 0
+}
+
+if [ $# -gt 0 ]; then
+    if [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
+        display_help
+    fi
+else
+    display_help
+fi
+
+# Copy docker-composer to the project
+if [ "$1" == "install" ]; then
+    if [ -f ./docker-compose.yml ]; then
+        echo "A docker-compose.yml file already exists in your project"
+
+        exit 1;
+    fi
+
+    cp ./vendor/savvywombat/pilot/skel/docker-compose.yml ./
+
+    exit 0;
+fi
+
 # Run bash on the main container
 if [ "$1" == "bash" ]; then
     shift 1
