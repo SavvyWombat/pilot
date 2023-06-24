@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
-# Source the ".env" file so environment variables are available...
-if [ -f ./.env ]; then
-  source ./.env;
+# Verify user's operating system is supported
+case "$(uname -s)" in
+    Linux*)             MACHINE=linux;;
+    Darwin*)            MACHINE=mac;;
+    *)                  MACHINE="UNKNOWN"
+esac
+
+if [ "$MACHINE" == "UNKNOWN" ]; then
+    echo "Unsupported operating system [$(uname -s)]. Pilot supports macOS, Linux, and Windows with WSL2." >&2
+
+    exit 1
 fi
-
-export MAIN_SERVICE=${MAIN_SERVICE:-"pilot"}
-export WWWUSER=${WWWUSER:-$UID}
-export WWWGROUP=${WWWGROUP:-$(id -g)}
-
-ARGS=()
 
 function display_help {
     echo "Pilot by Savvy Wombat"
@@ -39,6 +41,14 @@ function display_help {
     exit 0
 }
 
+function services_are_not_running {
+    echo "Services are not currently running" >&2
+    echo "" >&2
+    echo "Use './vendor/bin/pilot up' or './vendor/bin/pilot up -d' to start services" >&2
+
+    exit 1
+}
+
 if [ $# -gt 0 ]; then
     if [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
         display_help
@@ -47,7 +57,26 @@ else
     display_help
 fi
 
-# Copy docker-composer to the project
+# Source the ".env" file so environment variables are available
+if [ -f ./.env ]; then
+  source ./.env;
+fi
+
+export MAIN_SERVICE=${MAIN_SERVICE:-"pilot"}
+export WWWUSER=${WWWUSER:-$UID}
+export WWWGROUP=${WWWGROUP:-$(id -g)}
+
+# Test which Docker Compose command to use on user's system
+docker compose &> /dev/null
+if [ $? == 0 ]; then
+    DOCKER_COMPOSE=(docker compose)
+else
+    DOCKER_COMPOSE=(docker-compose)
+fi
+
+
+
+# Copy docker-compose.yml to the project
 if [ "$1" == "install" ]; then
     if [ -f ./docker-compose.yml ]; then
         echo "A docker-compose.yml file already exists in your project"
@@ -60,48 +89,96 @@ if [ "$1" == "install" ]; then
     exit 0;
 fi
 
+EXEC="yes"
+
+# Ensure that Docker is running
+if ! docker info > /dev/null 2>&1; then
+    echo "${BOLD}Docker is not running.${NC}" >&2
+
+    exit 1
+fi
+
+# Determine if any services are currently up
+if "${DOCKER_COMPOSE[@]}" ps "$MAIN_SERVICE" 2>&1 | grep 'Exit\|exited'; then
+    echo "${BOLD}Shutting down old service process...${NC}" >&2
+
+    "${DOCKER_COMPOSE[@]}" down > /dev/null 2>&1
+
+    EXEC="no"
+elif [ -z "$("${DOCKER_COMPOSE[@]}" ps -q)" ]; then
+    EXEC="no"
+fi
+
+ARGS=()
+
+# Proxy various commands through to docker-compose
+
 # Run bash on the main container
 if [ "$1" == "bash" ]; then
     shift 1
 
-    ARGS+=(exec)
-    [ ! -t 0 ] && ARGS+=(-T)
-    ARGS+=($MAIN_SERVICE "bash")
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u pilot)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=($MAIN_SERVICE "bash" "$@")
+    else
+        services_are_not_running
+    fi
 # Proxy PHP commands to the "php" binary on the main container...
 elif [ "$1" == "php" ]; then
     shift 1
 
-    ARGS+=(exec)
-    [ ! -t 0 ] && ARGS+=(-T)
-    ARGS+=($MAIN_SERVICE "php" "$@")
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u pilot)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=($MAIN_SERVICE "php" "$@")
+    else
+        services_are_not_running
+    fi
 # Proxy NPM commands to the "npm" binary on the main container...
 elif [ "$1" == "npm" ]; then
     shift 1
 
-    ARGS+=(exec)
-    [ ! -t 0 ] && ARGS+=(-T)
-    ARGS+=($MAIN_SERVICE "npm" "$@")
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u pilot)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=($MAIN_SERVICE "npm" "$@")
+    else
+        services_are_not_running
+    fi
 # Proxy Composer commands to the "composer" binary on the main container...
 elif [ "$1" == "composer" ]; then
     shift 1
 
-    ARGS+=(exec)
-    [ ! -t 0 ] && ARGS+=(-T)
-    ARGS+=($MAIN_SERVICE "composer" "$@")
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u pilot)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=($MAIN_SERVICE "composer" "$@")
+    else
+        services_are_not_running
+    fi
 # Run the local dev server
 elif [ "$1" == "serve" ]; then
     shift 1
 
-    ARGS+=(exec)
-    [ ! -t 0 ] && ARGS+=(-T)
-    ARGS+=($MAIN_SERVICE "npm" "run" "dev")
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u pilot)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=($MAIN_SERVICE "npm" "run" "dev")
+    else
+        services_are_not_running
+    fi
 # Build the static files for distribution
 elif [ "$1" == "build" ]; then
     shift 1
 
-    ARGS+=(exec)
-    [ ! -t 0 ] && ARGS+=(-T)
-    ARGS+=($MAIN_SERVICE "npm" "run" "build")
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u pilot)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=($MAIN_SERVICE "npm" "run" "build")
+    else
+        services_are_not_running
+    fi
 # Alias the original `docker-compose build` command
 elif [ "$1" == "build-services" ]; then
     shift 1

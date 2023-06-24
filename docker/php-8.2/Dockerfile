@@ -35,8 +35,8 @@ RUN apt-get -y autoremove \
 
 RUN setcap "cap_net_bind_service=+ep" /usr/bin/php8.2
 
-RUN groupadd --force -g $WWWGROUP savvywombat
-RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1001 savvywombat
+RUN groupadd --force -g $WWWGROUP pilot
+RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1701 pilot
 
 COPY php.ini /etc/php/8.2/cli/conf.d/99-php.ini
 COPY start-container /usr/local/bin/start-container
