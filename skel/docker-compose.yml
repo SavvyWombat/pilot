@@ -1,13 +1,13 @@
 version: '3'
 services:
-  savvy:
+  pilot:
     build:
       context: ./vendor/savvywombat/pilot/docker/php-8.2
       dockerfile: Dockerfile
       args:
         WWWGROUP: '${WWWGROUP}'
         NODE_VERSION: '${NODE_VERSION:-18}'
-    image: savvy-8.2/site
+    image: savvywombat/pilot/php-8.2
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     ports:
@@ -18,7 +18,7 @@ services:
     volumes:
       - '.:/var/www/html'
     networks:
-      - savvy
+      - pilot
 networks:
-  savvy:
+  pilot:
     driver: bridge
