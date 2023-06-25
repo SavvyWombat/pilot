@@ -64,6 +64,7 @@ fi
 
 export MAIN_SERVICE=${MAIN_SERVICE:-"pilot"}
 export NODE_SERVICE=${NODE_SERVICE:-"pilot"}
+export PUBLIC_DIR=${PUBLIC_DIR:-"public"}
 export WWWUSER=${WWWUSER:-$UID}
 export WWWGROUP=${WWWGROUP:-$(id -g)}
 
@@ -165,7 +166,7 @@ elif [ "$1" == "serve" ]; then
     if [ "$EXEC" == "yes" ]; then
         ARGS+=(exec -u pilot)
         [ ! -t 0 ] && ARGS+=(-T)
-        ARGS+=($NODE_SERVICE "npm" "run" "dev")
+        ARGS+=($MAIN_SERVICE "php" "-S" "0.0.0.0:80" "-t" $PUBLIC_DIR)
     else
         services_are_not_running
     fi
