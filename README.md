@@ -110,10 +110,14 @@ To build any assets in your project:
 ./vendor/bin/pilot build
 ```
 
-To serve content as your develop:
+To serve content as your develop. 
+This command wraps the [PHP built-in webserver] and should not be used as a production webserver.
+The command automatically sets the host and port for the webserver, and accepts the root directory and router script arguments:
 
 ```
 ./vendor/bin/pilot serve
+./vendor/bin/pilot serve -t public
+./vendor/bin/pilot serve -t public public/index.php
 ```
 
 ### Additional commands
@@ -149,3 +153,5 @@ Please report issues using the [GitHub issue tracker](https://github.com/SavvyWo
 ## Licence
 
 This package is licensed under [The MIT License (MIT)](https://github.com/SavvyWombat/pilot/blob/main/LICENSE).
+
+[PHP built-in webserver]: https://www.php.net/manual/en/features.commandline.webserver.php
