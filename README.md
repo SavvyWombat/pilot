@@ -148,4 +148,4 @@ Please report issues using the [GitHub issue tracker](https://github.com/SavvyWo
 
 ## Licence
 
-This package is licensed under [The MIT License (MIT)](https://github.com/SavvyWombat/pilot/blob/master/LICENSE).
+This package is licensed under [The MIT License (MIT)](https://github.com/SavvyWombat/pilot/blob/main/LICENSE).
