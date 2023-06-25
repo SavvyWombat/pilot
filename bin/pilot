@@ -63,6 +63,7 @@ if [ -f ./.env ]; then
 fi
 
 export MAIN_SERVICE=${MAIN_SERVICE:-"pilot"}
+export NODE_SERVICE=${NODE_SERVICE:-"pilot"}
 export WWWUSER=${WWWUSER:-$UID}
 export WWWGROUP=${WWWGROUP:-$(id -g)}
 
@@ -142,7 +143,7 @@ elif [ "$1" == "npm" ]; then
     if [ "$EXEC" == "yes" ]; then
         ARGS+=(exec -u pilot)
         [ ! -t 0 ] && ARGS+=(-T)
-        ARGS+=($MAIN_SERVICE "npm" "$@")
+        ARGS+=(NODE_SERVICE "npm" "$@")
     else
         services_are_not_running
     fi
@@ -164,7 +165,7 @@ elif [ "$1" == "serve" ]; then
     if [ "$EXEC" == "yes" ]; then
         ARGS+=(exec -u pilot)
         [ ! -t 0 ] && ARGS+=(-T)
-        ARGS+=($MAIN_SERVICE "npm" "run" "dev")
+        ARGS+=($NODE_SERVICE "npm" "run" "dev")
     else
         services_are_not_running
     fi
@@ -175,7 +176,7 @@ elif [ "$1" == "build" ]; then
     if [ "$EXEC" == "yes" ]; then
         ARGS+=(exec -u pilot)
         [ ! -t 0 ] && ARGS+=(-T)
-        ARGS+=($MAIN_SERVICE "npm" "run" "build")
+        ARGS+=($NODE_SERVICE "npm" "run" "build")
     else
         services_are_not_running
     fi
