@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [ ! -z "$WWWUSER" ]; then
+    usermod -u $WWWUSER pilot
+fi
+
+if [ $# -gt 0 ]; then
+    # We're passing arguments to the container after it has started and want to
+    exec gosu $WWWUSER "$@"
+else
+    # We want the container to stay alive after starting, but not really do anything until asked
+    exec sleep infinity
+fi
