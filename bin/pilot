@@ -166,7 +166,7 @@ elif [ "$1" == "serve" ]; then
     if [ "$EXEC" == "yes" ]; then
         ARGS+=(exec -u pilot)
         [ ! -t 0 ] && ARGS+=(-T)
-        ARGS+=($MAIN_SERVICE "php" "-S" "0.0.0.0:80" "-t" $PUBLIC_DIR)
+        ARGS+=($MAIN_SERVICE "php" "-S" "0.0.0.0:80" "-t" $PUBLIC_DIR "$@")
     else
         services_are_not_running
     fi
