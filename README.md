@@ -104,13 +104,14 @@ Stop the services and remove any volumes used by them:
 
 ### Building and serving assets and content
 
-To build any assets in your project:
+To build any assets in your project.
+By default, it runs the `npm run dev` command. However, you can substitute another command line script with the `BUILD_COMMAND` environment variable:
 
 ```
 ./vendor/bin/pilot build
 ```
 
-To serve content as your develop. 
+To serve content as you develop.
 This command wraps the [PHP built-in webserver] and should not be used as a production webserver.
 The command automatically sets the host and port for the webserver, and accepts the root directory and router script arguments:
 
