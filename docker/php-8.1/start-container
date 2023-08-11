@@ -9,5 +9,5 @@ if [ $# -gt 0 ]; then
     exec gosu $WWWUSER "$@"
 else
     # We want the container to stay alive after starting, but not really do anything until asked
-    exec sleep infinity
+    exec /bin/bash -c "trap : TERM INT; sleep infinity & wait"
 fi
